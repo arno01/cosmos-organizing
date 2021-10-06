@@ -37,9 +37,9 @@ do
 	node_new_address=$(stoml $1 validators.$n.new_address)
 	sed -i "s%$node_old_address%$node_new_address%g" genesis.json
 
-	node1_old_cosmosvalcons1=$(stoml $1 validators.$n.old_cosmosvalcons1)
-	node1_new_cosmosvalcons1=$(stoml $1 validators.$n.new_cosmosvalcons1)
-	sed -i "s%$node1_old_cosmosvalcons1%$node1_new_cosmosvalcons1%g" genesis.json
+	node_old_cosmosvalcons1=$(stoml $1 validators.$n.old_cosmosvalcons1)
+	node_new_cosmosvalcons1=$(stoml $1 validators.$n.new_cosmosvalcons1)
+	sed -i "s%$node_old_cosmosvalcons1%$node_new_cosmosvalcons1%g" genesis.json
 
 	let n=$n+1
 done
