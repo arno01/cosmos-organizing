@@ -1,0 +1,72 @@
+# chain ID to rename from and to
+[chain]
+old_chain_id = "cosmoshub-4"
+new_chain_id = "test"
+
+# list of validators
+[validators]
+  [validators.1]
+  old_pubkey = "cOQZvh/h9ZioSeUMZB/1Vy1Xo5x2sjrVjlE/qHnYifM="
+  new_pubkey = "qwiUMxz3llsy45fPvM0a8+XQeAJLvrX3QAEJmRMEEoU="
+  old_address = "B00A6323737F321EB0B8D59C6FD497A14B60938A"
+  new_address = "D5AB5E458FD9F9964EF50A80451B6F3922E6A4AA"
+  old_cosmosvalcons1 = "cosmosvalcons1kq9xxgmn0uepav9c6kwxl4yh599kpyu28e7ee6"
+  new_cosmosvalcons1 = "cosmosvalcons16k44u3v0m8uevnh4p2qy2xm08y3wdf92xsc3ve"
+  voting_power = 67
+
+  [validators.2]
+  old_pubkey = "W459Kbdx+LJQ7dLVASW6sAfdqWqNRSXnvc53r9aOx/o="
+  new_pubkey = "oi55Dw+JjLQc4u1WlAS3FsGwh5fd5/N5cP3VOLnZ/H0="
+  old_address = "83F47D7747B0F633A6BA0DF49B7DCF61F90AA1B0"
+  new_address = "7CB07B94FD743E2A8520C2B50DA4B03740643BF5"
+  old_cosmosvalcons1 = "cosmosvalcons1s0686a68krmr8f46ph6fklw0v8us4gdsm7nhz3"
+  new_cosmosvalcons1 = "cosmosvalcons10jc8h98awslz4pfqc26smf9sxaqxgwl4vxpcrp"
+  voting_power = 67
+
+[vars]
+# user account for delegator (node2)
+old_delegator_address = "cosmos1z98eg2ztdp2glyla62629nrlvczg8s7f0tm3dx"
+new_delegator_address = "cosmos1wvvhhfm387xvfnqshmdaunnpujjrdxznr5d5x9"
+old_delegator_key = "A6apc7iThbRkwboKqPy6eXxxQvTH+0lNkXZvugDM9V4g"
+new_delegator_key = "ApDOUyfcamDmnbEO7O4YKnKQQqQ93+gquLfGf7h5clX7"
+
+# delegation amount
+old_delegation_amount = "25390741.000000000000000000"
+new_delegation_amount = "6000000025390741.000000000000000000"
+
+# delegator shares amount
+old_delegator_shares = "13944328343563"
+new_delegator_shares = "6013944328343563"
+
+# validator power
+old_validator_power = "13944328"
+new_validator_power = "6013944328"
+
+# last_total_power
+old_last_total_power = "194616038"
+new_last_total_power = "6194616038"
+
+# amount of uatom
+old_uatom_amount = "277834757180509"
+new_uatom_amount = "6277834757180509"
+
+# delegation account
+old_delegation_account = "194616098248861"
+new_delegation_account = "6194616098248861"
+
+# min deposition amount
+old_deposition_amount = "64000000"
+new_deposition_amount = "1"
+
+# min voting power
+old_voting_power = "0.400000000000000000"
+new_voting_power = "0.000000000000000001"
+
+# minimum proportion of "yes"
+old_yes_threshold = "0.500000000000000000"
+new_yes_threshold = "0.000000000000000001"
+
+# voting period
+old_voting_period = "1209600s"
+new_voting_period = "60s"
+
