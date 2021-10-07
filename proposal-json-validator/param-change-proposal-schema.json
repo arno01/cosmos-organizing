@@ -1,0 +1,188 @@
+{
+    "title": "Parameter Change",
+    "description": "A parameter change proposal for the Cosmos Hub requires a parameter change JSON.",
+    "type": "object",
+    "properties" : {
+        "title" : {
+            "description" : "Title of the proposal",
+            "type" : "string"
+        },
+        "description" : {
+            "description" : "Details about the proposal",
+            "type" : "string"
+        },
+        "changes" : {
+            "description" : "New key-values by subspace",
+            "type" : "array",
+            "items" : {
+                "type" : "object",
+                "properties" : {
+                    "subspace" : {
+                        "type" : "string",
+                        "enum" : ["auth", "bank", "baseapp", "crisis", "distribution", "gov", "liquidity", "mint", "slashing", "staking", "transfer"]
+                    },
+                    "key" : {
+                        "type" : "string"
+                    },
+                    "value" : {
+                        
+                    }
+                },
+                "required" : ["subspace", "key", "value"],
+                "allOf" : [
+                    {
+                        "if" : {
+                            "properties" : {"subspace" : {"const" : "auth" }}
+                        },
+                        "then" : {
+                            "properties" : {"key" : { "enum" : [ 
+                                "MaxMemoCharacters", 
+                                "SigVerifyCostED25519",
+                                "SigVerifyCostSecp256k1",
+                                "TxSigLimit",
+                                "TxSizeCostPerByte"
+                            ]}}
+                        }
+                    },
+                    {
+                        "if" : {
+                            "properties" : {"subspace" : {"const" : "bank" }}
+                        },
+                        "then" : {
+                            "properties" : {"key" : { "enum" : [ 
+                                "DefaultSendEnabled",
+                                "SendEnabled"
+                            ]}}
+                        }
+                    },
+                    {
+                        "if" : {
+                            "properties" : {"subspace" : {"const" : "baseapp" }}
+                        },
+                        "then" : {
+                            "properties" : {"key" : { "enum" : [ 
+                                "BlockParams",
+                                "EvidenceParams",
+                                "ValidatorParams"
+                            ]}}
+                        }
+                    },
+                    {
+                        "if" : {
+                            "properties" : {"subspace" : {"const" : "crisis" }}
+                        },
+                        "then" : {
+                            "properties" : {"key" : { "enum" : [ 
+                                "ConstantFee"
+                            ]}}
+                        }
+                    },
+                    {
+                        "if" : {
+                            "properties" : {"subspace" : {"const" : "distribution" }}
+                        },
+                        "then" : {
+                            "properties" : {"key" : { "enum" : [ 
+                                "baseproposerreward",
+                                "bonusproposerreward",
+                                "communitytax",
+                                "withdrawaddrenabled"
+                            ]}}
+                        }
+                    },
+                    {
+                        "if" : {
+                            "properties" : {"subspace" : {"const" : "gov" }}
+                        },
+                        "then" : {
+                            "properties" : {"key" : { "enum" : [ 
+                                "depositparams",
+                                "tallyparams",
+                                "votingparams"
+                            ]}}
+                        }
+                    }, 
+                    {
+                        "if" : {
+                            "properties" : {"subspace" : {"const" : "liquidity" }}
+                        },
+                        "then" : {
+                            "properties" : {"key" : { "enum" : [ 
+                                "CircuitBreakerEnabled",
+                                "InitPoolCoinMintAmount",
+                                "MaxOrderAmountRatio",
+                                "MaxReserveCoinAmount",
+                                "MinInitDepositAmount",
+                                "PoolCreationFee",
+                                "PoolTypes",
+                                "SwapFeeRate",
+                                "UnitBatchHeight",
+                                "WithdrawFeeRate"
+                            ]}}
+                        }
+                    },
+                    {
+                        "if" : {
+                            "properties" : {"subspace" : {"const" : "mint" }}
+                        },
+                        "then" : {
+                            "properties" : {"key" : { "enum" : [ 
+                                "BlocksPerYear",
+                                "GoalBonded",
+                                "InflationMax",
+                                "InflationMin",
+                                "InflationRateChange",
+                                "MintDenom"
+                            ]}}
+                        }
+                    },
+                    {
+                        "if" : {
+                            "properties" : {"subspace" : {"const" : "slashing" }}
+                        },
+                        "then" : {
+                            "properties" : {"key" : { "enum" : [
+                                "DowntimeJailDuration", 
+                                "MinSignedPerWindow", 
+                                "SignedBlocksWindow", 
+                                "SlashFractionDoubleSign", 
+                                "SlashFractionDowntime"
+                            ]}}
+                        }
+                    },
+                    {
+                        "if" : {
+                            "properties" : {"subspace" : {"const" : "staking" }}
+                        },
+                        "then" : {
+                            "properties" : {"key" : { "enum" : [
+                                "BondDenom",
+                                "HistoricalEntries",
+                                "MaxEntries",
+                                "MaxValidators",
+                                "UnbondingTime"
+                            ]}}
+                        }
+                    },
+                    {
+                        "if" : {
+                            "properties" : {"subspace" : {"const" : "transfer" }}
+                        },
+                        "then" : {
+                            "properties" : {"key" : { "enum" : [
+                                "ReceiveEnabled",
+                                "SendEnabled"
+                            ]}}
+                        }
+                    }
+                ]
+            }
+        },
+        "deposit" : {
+            "description" : "Proposal deposit amount in uatoms",
+            "type" : "string",
+            "pattern" : "^[0-9]+uatom$"
+        }
+    },
+    "required" : ["title" , "description" , "changes" , "deposit" ]
+  }

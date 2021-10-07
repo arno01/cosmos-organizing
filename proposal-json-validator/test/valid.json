@@ -1,0 +1,17 @@
+{
+    "title": "Parameter changes for validator downtime",
+    "description": "If passed, this governance proposal will do two things:\n\n1. Increase the slashing penalty for downtime from 0.01% to 0.50%\n2. Decrease the window \n\nIf this proposal passes, validators must sign at least 5% of 5,000 blocks, which is 250 blocks. That means that a validator that misses 4,750 consecutive blocks will be considered by the system to have committed a liveness violation, where previously 9,500 consecutive blocks would need to have been missed to violate these system rules. Assuming 7s block times, validators offline for approximately 9.25 consecutive hours (instead of ~18.5 hours) will be slashed 0.5% (instead of 0.01%).",
+    "changes": [
+        {
+            "subspace": "slashing",
+            "key": "SlashFractionDowntime",
+            "value": 0.005000000000000000
+        },
+        {
+            "subspace": "slashing",
+            "key": "SignedBlocksWindow",
+            "value": 5000
+        }
+    ],
+    "deposit": "512000000uatom"
+}
