@@ -13,6 +13,14 @@ new_chain_id = "test"
   old_cosmosvalcons1 = "cosmosvalcons1kq9xxgmn0uepav9c6kwxl4yh599kpyu28e7ee6"
   new_cosmosvalcons1 = "cosmosvalcons16k44u3v0m8uevnh4p2qy2xm08y3wdf92xsc3ve"
   voting_power = 67
+  [validators.1.delegators]
+    [validators.1.delegators.1]
+    old_delegator_address = ""
+    new_delegator_address = ""
+    old_delegator_key = ""
+    new_delegator_key = ""
+    old_delegator_shares = ""
+    new_delegator_shares = ""
 
   [validators.2]
   old_pubkey = "W459Kbdx+LJQ7dLVASW6sAfdqWqNRSXnvc53r9aOx/o="
@@ -22,21 +30,19 @@ new_chain_id = "test"
   old_cosmosvalcons1 = "cosmosvalcons1s0686a68krmr8f46ph6fklw0v8us4gdsm7nhz3"
   new_cosmosvalcons1 = "cosmosvalcons10jc8h98awslz4pfqc26smf9sxaqxgwl4vxpcrp"
   voting_power = 67
+  [validators.2.delegators]
+    [validators.2.delegators.1]
+    old_delegator_address = "cosmos1z98eg2ztdp2glyla62629nrlvczg8s7f0tm3dx"
+    new_delegator_address = "cosmos1wvvhhfm387xvfnqshmdaunnpujjrdxznr5d5x9"
+    old_delegator_key = "A6apc7iThbRkwboKqPy6eXxxQvTH+0lNkXZvugDM9V4g"
+    new_delegator_key = "ApDOUyfcamDmnbEO7O4YKnKQQqQ93+gquLfGf7h5clX7"
+    old_delegator_shares = "13944328343563"
+    new_delegator_shares = "6013944328343563"
 
-[vars]
-# user account for delegator (node2)
-old_delegator_address = "cosmos1z98eg2ztdp2glyla62629nrlvczg8s7f0tm3dx"
-new_delegator_address = "cosmos1wvvhhfm387xvfnqshmdaunnpujjrdxznr5d5x9"
-old_delegator_key = "A6apc7iThbRkwboKqPy6eXxxQvTH+0lNkXZvugDM9V4g"
-new_delegator_key = "ApDOUyfcamDmnbEO7O4YKnKQQqQ93+gquLfGf7h5clX7"
-
+[governance]
 # delegation amount
 old_delegation_amount = "25390741.000000000000000000"
 new_delegation_amount = "6000000025390741.000000000000000000"
-
-# delegator shares amount
-old_delegator_shares = "13944328343563"
-new_delegator_shares = "6013944328343563"
 
 # validator power
 old_validator_power = "13944328"
