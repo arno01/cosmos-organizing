@@ -1,14 +1,14 @@
-Install Node Exporter on host:
+# Ansible playbooks for setting up Prometheus monitoring
+
+### Install Node Exporter on host:
 
 `ansible-playbook -i user@FQDN, install_node_exporter.yml --extra-vars "node_exporter_version=1.2.2 gaia_dir=/home/user/.gaia"`
 
-Configure Prometheus on monitoring server
-
-# Ansible playbooks for setting up Prometheus monitoring
+### Configure Prometheus on monitoring server
 
 `ansible-playbook -i user@monitor.prod.earthball.xyz, configure_prometheus.yml --extra-vars "hostname=FQDN node_exporter_port=9100 jobname=Vega_Testnet gaiad_port=26657 gaiad_prometheus_listen_addr=26660"`
 
-Make sure `prometheus` is set to true in `~/.gaia/config/config.toml`
+#### Make sure `prometheus` is set to true in `~/.gaia/config/config.toml`
 
 Ease of use interactive shell script wrapper which will run the `install_node_exporter.yml` and the `configure_prometheus.yml` playbooks:
 `./setup-monitoring.sh `
