@@ -1,0 +1,18 @@
+[
+  {
+    "targets": ["{{ hostname }}:{{ node_exporter_port }}"],
+    "labels": {
+      "job": "{{ jobname }}",
+      "environment": "{{ hostname }}_exporter",
+      "service": "{{ hostname }}_exporter"
+    }
+  },
+  {
+    "targets": ["{{ hostname }}:{{ gaiad_prometheus_listen_addr }}"],
+    "labels": {
+      "job": "{{ jobname }}",
+      "environment": "{{ hostname }}_gaiad_exporter",
+      "service": "{{ hostname }}_gaiad_exporter"
+    }
+  }
+]

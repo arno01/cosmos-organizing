@@ -1,0 +1,4 @@
+---
+node_exporter_port: 9100
+gaiad_port: 26657
+gaiad_prometheus_listen_addr: 26660

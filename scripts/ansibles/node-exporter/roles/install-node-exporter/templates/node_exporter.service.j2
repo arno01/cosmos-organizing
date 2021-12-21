@@ -3,7 +3,7 @@ Description=Node Exporter
 
 [Service]
 User=node_exporter
-ExecStart=/opt/node_exporter/node_exporter --web.listen-address=[::]:9100 --collector.systemd --web.config="/opt/node_exporter/https/web-config.yml" --collector.textfile.directory="/opt/node_exporter/textfiles"
+ExecStart=/opt/node_exporter/node_exporter --web.listen-address=[::]:9100 --collector.systemd --collector.textfile.directory="/opt/node_exporter/textfiles"
 
 [Install]
 WantedBy=multi-user.target

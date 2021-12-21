@@ -34,24 +34,24 @@
     owner: node_exporter
     group: node_exporter
 
-- name: Create directory /opt/node_exporter/https/
-  file:
-    path: /opt/node_exporter/https/
-    state: directory
-    mode: '0700'
-    owner: node_exporter
-    group: node_exporter
+#- name: Create directory /opt/node_exporter/https/
+#  file:
+#    path: /opt/node_exporter/https/
+#    state: directory
+#    mode: '0700'
+#    owner: node_exporter
+#    group: node_exporter
 
-- name: Generate selfsigned SSL cert
-  shell: openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -keyout /opt/node_exporter/https/node_exporter.key -out /opt/node_exporter/https/node_exporter.crt -subj "/C=CA/ST=Ontario/L=Toronto/O=IT/CN=localhost" -addext "subjectAltName = DNS:localhost"
-  args:
-    creates: /opt/node_exporter/https/node_exporter.key
+#- name: Generate selfsigned SSL cert
+#  shell: openssl req -new -newkey rsa:4096 -days 3650 -nodes -x509 -keyout /opt/node_exporter/https/node_exporter.key -out /opt/node_exporter/https/node_exporter.crt -subj "/C=CA/ST=Ontario/L=Toronto/O=IT/CN=localhost" -addext "subjectAltName = DNS:localhost"
+#  args:
+#    creates: /opt/node_exporter/https/node_exporter.key
 
-- name: Install /opt/node_exporter/https/web-config.yml
-  template:
-    src: web-config.yml.j2
-    dest: /opt/node_exporter/https/web-config.yml
-    mode: 0644
+#- name: Install /opt/node_exporter/https/web-config.yml
+#  template:
+#    src: web-config.yml.j2
+#    dest: /opt/node_exporter/https/web-config.yml
+#    mode: 0644
 
 - name: Chown /opt/node_exporter to node_exporter
   file:

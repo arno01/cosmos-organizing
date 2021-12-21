@@ -1,0 +1,10 @@
+---
+- name: Remove Prometheus configuration for {{ hostname }}
+  file:
+    path: /opt/prometheus/hosts/{{ hostname }}.json
+    state: absent
+
+- name: Remove Blackbox Exporter configuration for {{ hostname }}
+  file:
+    path: /opt/prometheus/blackbox-icmp/{{ hostname }}.json
+    state: absent
