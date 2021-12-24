@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 This module helps you configure Cosmos Chain genesis files for testnets.
 TODO: Docs for how to get a genesis file
@@ -8,6 +10,9 @@ import json
 BINANCE_VALIDATOR_ADDRESS = "cosmosvaloper156gqf9837u7d4c4678yt3rl4ls9c5vuursrrzf"
 BINANCE_TOKEN_BONDING_POOL_ADDRESS = "cosmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu34mf0eh"
 
+DEFAULT_POWER = 6000000000
+POWER_TO_TOKENS = 1000000
+
 
 class GenesisTinker:
     """
@@ -15,7 +20,7 @@ class GenesisTinker:
     """
     genesis = {}
 
-    def load_genesis(self, path):
+    def load_file(self, path):
         """
         Loads a genesis file from the given path
         """
@@ -26,7 +31,7 @@ class GenesisTinker:
             self.genesis = json.load(content)
         return self
 
-    def save_genesis(self, path):
+    def save_file(self, path):
         """
         Save a modified genesis file back to JSON
         """
@@ -130,7 +135,7 @@ class GenesisTinker:
 
     def increase_supply(self, increase, denom="uatom"):
         """
-        Increase the totall supply of coins of a given denomination
+        Increase the total supply of coins of a given denomination
         """
 
         supplies = self.genesis["app_state"]["bank"]["supply"]
@@ -143,19 +148,18 @@ class GenesisTinker:
                 break
         return self
 
-    def increase_delegation(self, delegator_address, operator_address, validator_address, increase=6000000000000000):
+    def increase_validator_power(self, validator_address, power_increase=DEFAULT_POWER):
         """
-        This function increases the power of a delegator and validator
-        It seems to be dependant on binance, so be careful if you're changing stuff.
+        Increase the staking power of a validator
+        Also increases the last total power value
         """
-        operator_address = BINANCE_VALIDATOR_ADDRESS
-        token_bonding_pool_address = BINANCE_TOKEN_BONDING_POOL_ADDRESS
+        validators = self.genesis['validators']
 
-        starting_infos = self.genesis["app_state"]["distribution"]["delegator_starting_infos"]
-        staking_validators = self.genesis["app_state"]["staking"]["validators"]
-        validators = self.genesis["validators"]
-
-        power_increase = (increase / 1000000)
+        for validator in validators:
+            if validator["address"] == validator_address:
+                old_power = int(validator["power"])
+                new_power = old_power + power_increase
+                validator["power"] = str(new_power)
 
         last_total_power = int(
             self.genesis['app_state']['staking']['last_total_power'])
@@ -163,13 +167,13 @@ class GenesisTinker:
         self.genesis["app_state"]["staking"]["last_total_power"] = str(
             new_last_total_power)
 
-        for info in starting_infos:
-            if info["delegator_address"] == delegator_address:
-                old_stake = float(info["starting_info"]["stake"])
-                new_stake = old_stake + increase
-                info["starting_info"]["stake"] = str(
-                    format(new_stake), ".18f")
-                break
+        return self
+
+    def increase_validator_stake(self, operator_address, increase=DEFAULT_POWER*POWER_TO_TOKENS):
+        """
+        Increases the stake of a validator as well as its delegator_shares
+        """
+        staking_validators = self.genesis["app_state"]["staking"]["validators"]
 
         for validator in staking_validators:
             if validator["operator_address"] == operator_address:
@@ -183,12 +187,17 @@ class GenesisTinker:
                     format(new_shares, ".18f"))
                 break
 
-        for validator in validators:
-            if validator["address"] == validator_address:
-                old_power = int(validator["power"])
-                new_power = old_power + power_increase
-                validator["power"] = str(new_power)
+    def increase_delegator_stake(self, delegator_address, increase=DEFAULT_POWER*POWER_TO_TOKENS):
+        """
+        Increases the stake for a delegator
+        """
+        starting_infos = self.genesis["app_state"]["distribution"]["delegator_starting_infos"]
 
-        # Increases the token boding pool for binance (???) and also the total supply
-        self.increase_balance(token_bonding_pool_address, increase)
+        for info in starting_infos:
+            if info["delegator_address"] == delegator_address:
+                old_stake = float(info["starting_info"]["stake"])
+                new_stake = old_stake + increase
+                info["starting_info"]["stake"] = str(
+                    format(new_stake), ".18f")
+                break
         return self
