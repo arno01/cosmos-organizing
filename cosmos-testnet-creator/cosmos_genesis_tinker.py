@@ -13,7 +13,6 @@ BINANCE_TOKEN_BONDING_POOL_ADDRESS = "cosmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu34mf
 DEFAULT_POWER = 6000000000
 POWER_TO_TOKENS = 1000000
 
-
 class GenesisTinker:
     """
     This class gives you primitives for tinkering with Cosmos chain Genesis Files

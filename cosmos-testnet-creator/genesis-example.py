@@ -36,10 +36,10 @@ new_delegator_key = "A81DhG/5sB6RA8dl/6jtmX0svTc0xJL5NjPPI/q4jJWP"
 validator_address = "cosmosvaloper156gqf9837u7d4c4678yt3rl4ls9c5vuursrrzf"
 token_bonding_pool = "cosmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu34mf0eh"
 
-tinker = cosmos_genesis_tinker.GenesisTinker()
+genesis = cosmos_genesis_tinker.GenesisTinker()
 
-tinker.load_file(exported_genesis_filename)
-tinker.swap_validator({
+genesis.load_file(exported_genesis_filename)
+genesis.swap_validator({
     "pub_key": node1_old_pubkey,
     "address": node1_old_address,
     "consensus_address": node1_old_cosmosvalcons1
@@ -49,7 +49,7 @@ tinker.swap_validator({
     "consensus_address": node1_new_cosmosvalcons1
 })
 
-tinker.swap_validator({
+genesis.swap_validator({
     "pub_key": node2_old_pubkey,
     "address": node2_old_address,
     "consensus_address": node2_old_cosmosvalcons1
@@ -58,15 +58,15 @@ tinker.swap_validator({
     "address": node2_new_address,
     "consensus_address": node2_new_cosmosvalcons1
 })
-tinker.swap_delegator(old_delegator_address, new_delegator_address)
+genesis.swap_delegator(old_delegator_address, new_delegator_address)
 
-tinker.increase_balance(new_delegator_address, 300000000)
+genesis.increase_balance(new_delegator_address, 300000000)
 
-tinker.increase_validator_power(node2_old_address, 6000000000)
+genesis.increase_validator_power(node2_old_address, 6000000000)
 
 stake_increase = 6000000000000000
-tinker.increase_balance(token_bonding_pool, stake_increase)
-tinker.increase_validator_stake(validator_address, stake_increase)
-tinker.increase_delegator_stake(new_delegator_address, stake_increase)
+genesis.increase_balance(token_bonding_pool, stake_increase)
+genesis.increase_validator_stake(validator_address, stake_increase)
+genesis.increase_delegator_stake(new_delegator_address, stake_increase)
 
-tinker.save_file(new_genesis_filename)
+genesis.save_file(new_genesis_filename)
