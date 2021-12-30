@@ -45,8 +45,7 @@ class GenesisTinker:
         """
         request = requests.get(url, allow_redirects=True, stream=True)
 
-        # Auto-read from zipfiles? https://docs.python.org/3/library/zipfile.html
-        # Probably a zip file
+        # Auto-read from zipfiles
         if '.tar.gz' in url:
             with tarfile.open(fileobj=request.raw, mode='r|gz') as archive:
                 archive.list()
@@ -112,26 +111,49 @@ class GenesisTinker:
         missed_blocks = self.genesis["app_state"]["slashing"]["missed_blocks"]
         signing_infos = self.genesis["app_state"]["slashing"]["signing_infos"]
 
+        found_validator = False
         for validator in validators:
             if validator["pub_key"]["value"] == old["pub_key"]:
+                found_validator = True
                 validator["pub_key"]["value"] = new["pub_key"]
-            if validator["address"] == old["address"]:
+                if validator["address"] != old["address"]:
+                    raise Exception(
+                        "Old address doesn't match old pub key")
                 validator["address"] = new["address"]
 
+        if not found_validator:
+            raise Exception("Could not find validator")
+
+        found_validator = False
         for validator in staking_validators:
             if validator["consensus_pubkey"]["key"] == old["pub_key"]:
                 validator["consensus_pubkey"]["key"] = new["pub_key"]
+                found_validator_key = True
                 break
 
+        if not found_validator:
+            raise Exception("Could not find validator staking")
+
+        found_validator = False
         for validator in missed_blocks:
             if validator["address"] == old["consensus_address"]:
                 validator["address"] = new["address"]
+                found_validator_key = True
                 break
 
+        if not found_validator:
+            raise Exception("Could not find validator in missed blocks")
+
+        found_validator = False
         for validator in signing_infos:
             if validator["address"] == old["consensus_address"]:
                 validator["address"] = new["address"]
+                found_validator_key = True
                 break
+
+        if not found_validator:
+            raise Exception("Could not find validator in signing infos")
+
         return self
 
     def swap_delegator(self, old_address, new_address):
@@ -144,31 +166,47 @@ class GenesisTinker:
         delegations = self.genesis["app_state"]["staking"]["delegations"]
         starting_infos = self.genesis["app_state"]["distribution"]["delegator_starting_infos"]
 
+        found_account = False
         for account in accounts:
             try:
                 if account["address"] == old_address:
                     account["address"] = new_address
+                    found_account = True
                     break
             except KeyError:
                 pass
 
+        if not found_account:
+            raise Exception("Could not find old account address")
+
+        found_balance = False
         for balance in balances:
             if balance["address"] == old_address:
                 balance["address"] = new_address
+                found_balance = True
                 break
 
+        if not found_balance:
+            raise Exception('Could not find old balance')
+
+        found_delegation = False
         for delegation in delegations:
             if delegation["delegator_address"] == old_address:
                 delegation["delegator_address"] = new_address
+                found_delegation = True
                 break
+
+        if not found_delegation:
+            raise Exception("Could not find old delegator stake")
 
         for info in starting_infos:
             if info["delegator_address"] == old_address:
                 info["delegator_address"] = new_address
                 break
+
         return self
 
-    def create_coin(self, denom):
+    def create_coin(self, denom, amount="0"):
         """
         Creats a new coin based on a given name if it doesn't exist
         """
@@ -180,7 +218,7 @@ class GenesisTinker:
                 # Already exists, so we don't need to add it
                 return self
 
-        supplies.append({"denom": denom, "amount": "0"})
+        supplies.append({"denom": denom, "amount": amount})
 
         return self
 
@@ -191,8 +229,10 @@ class GenesisTinker:
 
         balances = self.genesis["app_state"]["bank"]["balances"]
 
+        found_balance = False
         for balance in balances:
             if balance["address"] == address:
+                found_balance = True
                 had_coin = False
                 for coin in balance["coins"]:
                     if coin["denom"] == denom:
@@ -206,6 +246,9 @@ class GenesisTinker:
                         {"denom": denom, "amount": str(increase)})
                 break
 
+        if not found_balance:
+            raise Exception('Could not find balance for address')
+
         self.increase_supply(increase, denom)
         return self
 
@@ -216,12 +259,18 @@ class GenesisTinker:
 
         supplies = self.genesis["app_state"]["bank"]["supply"]
 
+        found_coin = False
         for coin in supplies:
             if coin["denom"] == denom:
                 old_amount = int(coin["amount"])
                 new_amount = old_amount + increase
                 coin["amount"] = str(new_amount)
+                found_coin = True
                 break
+
+        if not found_coin:
+            self.create_coin(denom, increase)
+
         return self
 
     def increase_validator_power(self, validator_address, power_increase=DEFAULT_POWER):
@@ -231,11 +280,18 @@ class GenesisTinker:
         """
         validators = self.genesis['validators']
 
+        found_validator = False
+
         for validator in validators:
             if validator["address"] == validator_address:
                 old_power = int(validator["power"])
                 new_power = old_power + power_increase
                 validator["power"] = str(new_power)
+                found_validator = True
+                break
+
+        if not found_validator:
+            raise Exception('Could not find validator_address')
 
         last_total_power = int(
             self.genesis['app_state']['staking']['last_total_power'])
@@ -251,6 +307,7 @@ class GenesisTinker:
         """
         staking_validators = self.genesis["app_state"]["staking"]["validators"]
 
+        found_validator = False
         for validator in staking_validators:
             if validator["operator_address"] == operator_address:
                 old_amount = int(validator["tokens"])
@@ -261,7 +318,14 @@ class GenesisTinker:
                 new_shares = old_shares + increase
                 validator["delegator_address"] = str(
                     format(new_shares, ".18f"))
+
+                found_validator = True
                 break
+
+        if not found_validator:
+            raise Exception("Could not find operator_address")
+
+        return self
 
     def increase_delegator_stake(self, delegator_address, increase=DEFAULT_POWER*POWER_TO_TOKENS):
         """
@@ -269,11 +333,17 @@ class GenesisTinker:
         """
         starting_infos = self.genesis["app_state"]["distribution"]["delegator_starting_infos"]
 
+        found_stake = False
         for info in starting_infos:
             if info["delegator_address"] == delegator_address:
                 old_stake = float(info["starting_info"]["stake"])
                 new_stake = old_stake + increase
                 info["starting_info"]["stake"] = str(
                     format(new_stake, ".18f"))
+                found_stake = True
                 break
+
+        if not found_stake:
+            raise Exception("Unable to find delegator_address")
+
         return self
