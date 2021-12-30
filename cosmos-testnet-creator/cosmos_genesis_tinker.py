@@ -8,6 +8,9 @@ TODO: Docs for how to get a genesis file
 import json
 from hashlib import sha256
 from zipfile import ZipFile
+from io import BytesIO
+import gzip
+import tarfile
 import requests
 
 BINANCE_VALIDATOR_ADDRESS = "cosmosvaloper156gqf9837u7d4c4678yt3rl4ls9c5vuursrrzf"
@@ -40,13 +43,20 @@ class GenesisTinker:
         Optionally specify a sha256 sum to verify the data integrity
         The genesis file can also be stored in a zip file under `genesis.json`
         """
-        request = requests.get(url, allow_redirects=True)
+        request = requests.get(url, allow_redirects=True, stream=True)
 
         # Auto-read from zipfiles? https://docs.python.org/3/library/zipfile.html
-        content_type = request.headers.get('content-type')
-
-        if ('tar' in content_type) or ('zip' in content_type):
-            with ZipFile(request.content, 'r') as archive:
+        # Probably a zip file
+        if '.tar.gz' in url:
+            with tarfile.open(fileobj=request.raw, mode='r|gz') as archive:
+                archive.list()
+                with archive.extractfile('genesis.json') as file:
+                    content = file.read()
+        elif '.gz' in url:
+            with gzip.open(request.raw, 'r') as file:
+                content = file.read()
+        elif '.zip' in url:
+            with ZipFile(BytesIO(request.content), 'r') as archive:
                 with archive.open('genesis.json', 'r') as file:
                     content = file.read()
         else:
@@ -66,7 +76,7 @@ class GenesisTinker:
         """
         Generates the JSON for the current genesis state
         """
-        return json.dumps(self.genesis, indent=True)
+        return json.dumps(self.genesis, indent=False)
 
     def generate_shasum(self):
         """
@@ -81,7 +91,7 @@ class GenesisTinker:
         Save a modified genesis file back to JSON
         """
         with open(path, "w", encoding="utf8") as file:
-            json.dump(self.genesis, file, indent=True)
+            json.dump(self.genesis, file, indent=False)
         return self
 
     def swap_validator(self, old, new):
@@ -264,6 +274,6 @@ class GenesisTinker:
                 old_stake = float(info["starting_info"]["stake"])
                 new_stake = old_stake + increase
                 info["starting_info"]["stake"] = str(
-                    format(new_stake), ".18f")
+                    format(new_stake, ".18f"))
                 break
         return self
