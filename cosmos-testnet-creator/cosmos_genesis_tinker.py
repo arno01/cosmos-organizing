@@ -6,12 +6,16 @@ TODO: Docs for how to get a genesis file
 """
 
 import json
+from hashlib import sha256
+from zipfile import ZipFile
+import requests
 
 BINANCE_VALIDATOR_ADDRESS = "cosmosvaloper156gqf9837u7d4c4678yt3rl4ls9c5vuursrrzf"
 BINANCE_TOKEN_BONDING_POOL_ADDRESS = "cosmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu34mf0eh"
 
 DEFAULT_POWER = 6000000000
 POWER_TO_TOKENS = 1000000
+
 
 class GenesisTinker:
     """
@@ -29,6 +33,48 @@ class GenesisTinker:
             file.close()
             self.genesis = json.load(content)
         return self
+
+    def load_url(self, url, shasum=False):
+        """
+        Download and parse a genesis file from the web.
+        Optionally specify a sha256 sum to verify the data integrity
+        The genesis file can also be stored in a zip file under `genesis.json`
+        """
+        request = requests.get(url, allow_redirects=True)
+
+        # Auto-read from zipfiles? https://docs.python.org/3/library/zipfile.html
+        content_type = request.headers.get('content-type')
+
+        if ('tar' in content_type) or ('zip' in content_type):
+            with ZipFile(request.content, 'r') as archive:
+                with archive.open('genesis.json', 'r') as file:
+                    content = file.read()
+        else:
+            content = request.content
+
+        if shasum is not False:
+            got_digest = sha256(content).hexdigest()
+            if got_digest != shasum:
+                raise Exception(
+                    "Got invalid digest from remote file", got_digest, shasum)
+
+        self.genesis = json.loads(content)
+
+        return self
+
+    def generate_json(self):
+        """
+        Generates the JSON for the current genesis state
+        """
+        return json.dumps(self.genesis, indent=True)
+
+    def generate_shasum(self):
+        """
+        Generates a sha256 checksum of the genesis file (to verify later)
+        """
+        content = self.generate_json()
+        content_bytes = content.encode('utf-8')
+        return sha256(content_bytes).hexdigest()
 
     def save_file(self, path):
         """
@@ -112,6 +158,22 @@ class GenesisTinker:
                 break
         return self
 
+    def create_coin(self, denom):
+        """
+        Creats a new coin based on a given name if it doesn't exist
+        """
+
+        supplies = self.genesis["app_state"]["bank"]["supply"]
+
+        for supply in supplies:
+            if supply['denom'] == denom:
+                # Already exists, so we don't need to add it
+                return self
+
+        supplies.append({"denom": denom, "amount": "0"})
+
+        return self
+
     def increase_balance(self, address, increase=300000000, denom="uatom"):
         """
         Increases the balance of a person and also the overall supply of uatom
@@ -121,12 +183,17 @@ class GenesisTinker:
 
         for balance in balances:
             if balance["address"] == address:
+                had_coin = False
                 for coin in balance["coins"]:
                     if coin["denom"] == denom:
                         old_amount = int(coin["amount"])
                         new_amount = old_amount + increase
                         coin["amount"] = str(new_amount)
+                        had_coin = True
                         break
+                if not had_coin:
+                    balance["coins"].append(
+                        {"denom": denom, "amount": str(increase)})
                 break
 
         self.increase_supply(increase, denom)
