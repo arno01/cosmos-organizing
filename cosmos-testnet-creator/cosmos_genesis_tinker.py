@@ -138,7 +138,7 @@ class GenesisTinker:
         for validator in missed_blocks:
             if validator["address"] == old["consensus_address"]:
                 validator["address"] = new["address"]
-                found_validator_key = True
+                found_validator = True
                 break
 
         if not found_validator:
@@ -148,7 +148,7 @@ class GenesisTinker:
         for validator in signing_infos:
             if validator["address"] == old["consensus_address"]:
                 validator["address"] = new["address"]
-                found_validator_key = True
+                found_validator = True
                 break
 
         if not found_validator:
