@@ -128,7 +128,7 @@ class GenesisTinker:
         for validator in staking_validators:
             if validator["consensus_pubkey"]["key"] == old["pub_key"]:
                 validator["consensus_pubkey"]["key"] = new["pub_key"]
-                found_validator_key = True
+                found_validator = True
                 break
 
         if not found_validator:
