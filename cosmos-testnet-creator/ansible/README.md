@@ -1,0 +1,52 @@
+# Ansible Cosmos Network Creator
+
+Functionality:
+- Reusable Ansible playbooks for setting up entire networks
+- Ansible Roles for configuring machines
+	- Gaiad (the base layer for gaia nodes)
+		- run as systemd service
+		- version, for git tag
+		- custom genesis file (from local FS or URL)
+		- pre-configure node public and private keys
+		- custom app.toml (file path OR)
+			- custom ports (grpc, api)
+			- pruning
+			- snapshot_interval
+		- custom config.toml (file path OR)
+			- fast_sync
+			- custom ports (rpc)
+			- p2p (laddr, external_address, seeds, persistent_peers)
+				- persistent_peers: Should be easy to use machine IPs,
+				- private_peer_ids
+				- seed_mode
+			- statesync
+			- prometheus (listen_addr)
+	- Validator (extends Gaiad)
+		- Sane defaults for setting up a validator node
+			- No extra services
+			- Not full?
+			- configure validator keys
+			- Easy to have it peer with just a single peer
+	- Block Explorer (extends Gaiad)
+		- Full node
+		- No Pruning
+		- Runs block explorer service
+	- Statesync (extends Gaiad)
+		- Full node
+		- enables statesync and advertising itself
+	- Archive (extend Gaiad)
+		- Full node
+		- No pruning
+		- ???
+	- Public RPC (extend Gaiad
+		- Expose RPC publicly
+		- Heavy pruning?
+  - Graphana
+  	- Collect stats
+  	- View stats
+  - Panic (simply VC)
+    - Configure API endpoints and secrets?
+  	- Collect stats
+  - IBC Relay
+  	- TODO: What is needed here?
+
