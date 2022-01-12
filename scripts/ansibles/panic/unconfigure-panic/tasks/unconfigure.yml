@@ -1,0 +1,18 @@
+---
+- name: Copy over config_panic_nodes.py
+  copy:
+    src: config_panic_nodes.py
+    dest: /usr/local/bin/config_panic_nodes.py
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Unconfigure PANIC with config_panic_nodes.py
+  script:
+    cmd: config_panic_nodes.py {{ config_file }} del {{ node_name }}
+    become_user: panic
+
+- name: Restart PANIC
+  systemd:
+    name: panic-cosmos.service
+    state: restarted
