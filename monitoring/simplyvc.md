@@ -205,7 +205,7 @@ sudo systemctl start panic-cosmos.service # start process
 ```
 
 ## Adding new nodes
-To add new, update and deleting nodes it is recommanded to use `/usr/local/bin/config_panic_nodes.py` on the monitoring server
+To add new, update and deleting nodes it is recommanded to use the PANIC Ansible playbook in this repo or `/usr/local/bin/config_panic_nodes.py` on the monitoring server
 
 ### To manually edit the config file
 To add new nodes to be monitored edit `~/panic_cosmos/config/user_config_nodes.ini`
