@@ -78,12 +78,9 @@ genesis.swap_delegator(OLD_DELEGATOR_ADDRESS, NEW_DELEGATOR_ADDRESS)
 
 genesis.increase_balance(NEW_DELEGATOR_ADDRESS, 300000000)
 
-genesis.increase_validator_power(NODE2_NEW_ADDRESS, 6000000000)
-
 STAKE_INCREASE = 6000000000000000
-genesis.increase_balance(BINANCE_TOKEN_BONDING_POOL, STAKE_INCREASE)
-genesis.increase_validator_stake(BINANCE_VALIDATOR_ADDRESS, STAKE_INCREASE)
-genesis.increase_delegator_stake(NEW_DELEGATOR_ADDRESS, STAKE_INCREASE)
+genesis.increase_delegator_stake_to_validator(
+    NEW_DELEGATOR_ADDRESS, NODE2_NEW_ADDRESS, STAKE_INCREASE)
 
 print("SHA256SUM:")
 print(genesis.generate_shasum())

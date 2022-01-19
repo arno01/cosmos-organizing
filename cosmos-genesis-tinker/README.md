@@ -1,5 +1,8 @@
 # Cosmos Genesis Tinker
 
+You can get more docs by invoking `pydoc3 cosmos_genesis_tinker`.
+TODO: Add the output to the README or it's own .md file
+
 ## API
 
 Tinkering with genesis files

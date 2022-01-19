@@ -13,7 +13,6 @@ import gzip
 import tarfile
 import requests
 
-BINANCE_VALIDATOR_ADDRESS = "cosmosvaloper156gqf9837u7d4c4678yt3rl4ls9c5vuursrrzf"
 # Default value is the cosmoshub-4 bonded token pool account
 TOKEN_BONDING_POOL_ADDRESS = "cosmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu34mf0eh"
 
@@ -21,16 +20,45 @@ DEFAULT_POWER = 6000000000
 POWER_TO_TOKENS = 1000000
 
 
+def _swap_address_in_list(old_address, new_address, validators):
+    found_validator = False
+    for validator in validators:
+        if validator["address"] == old_address:
+            validator["address"] = new_address
+            found_validator = True
+            break
+
+    if not found_validator:
+        raise Exception("Could not find validator address")
+
+
 class GenesisTinker:
     """
     This class gives you primitives for tinkering with Cosmos chain Genesis Files
     """
     genesis = {}
+    should_log_steps = True
+    __step_count = 0
+
+    def log_step(self, message):
+        """
+        Log a message about the current steps.
+        Automatically increments the step_count
+        """
+
+        if not self.should_log_steps:
+            return
+
+        self.__step_count += 1
+        step_count = str(self.__step_count)
+        print(step_count + ". " + message)
 
     def load_file(self, path):
         """
         Loads a genesis file from the given path
         """
+
+        self.log_step("Loading genesis from file " + path)
 
         with open(path, "r", encoding="utf8") as file:
             content = file.read()
@@ -44,6 +72,14 @@ class GenesisTinker:
         Optionally specify a sha256 sum to verify the data integrity
         The genesis file can also be stored in a zip file under `genesis.json`
         """
+
+        log_string = "Loading genesis from URL " + url
+
+        if shasum:
+            log_string += " with shasum " + shasum
+
+        self.log_step(log_string)
+
         request = requests.get(url, allow_redirects=True, stream=True)
 
         # Auto-read from zipfiles
@@ -90,8 +126,12 @@ class GenesisTinker:
         """
         Save a modified genesis file back to JSON
         """
+
+        self.log_step("Saving genesis to file " + path)
+
         with open(path, "w", encoding="utf8") as file:
             json.dump(self.genesis, file, indent=False)
+
         return self
 
     def swap_validator(self, old, new):
@@ -107,6 +147,9 @@ class GenesisTinker:
             "consensus_address": "cosmosvalcon..."
         }
         """
+
+        self.log_step("Swapping validator " + str(old) + " to " + str(new))
+
         staking_validators = self.genesis["app_state"]["staking"]["validators"]
         validators = self.genesis["validators"]
         missed_blocks = self.genesis["app_state"]["slashing"]["missed_blocks"]
@@ -121,6 +164,7 @@ class GenesisTinker:
                     raise Exception(
                         "Old address doesn't match old pub key")
                 validator["address"] = new["address"]
+                break
 
         if not found_validator:
             raise Exception("Could not find validator")
@@ -135,25 +179,13 @@ class GenesisTinker:
         if not found_validator:
             raise Exception("Could not find validator staking")
 
-        found_validator = False
-        for validator in missed_blocks:
-            if validator["address"] == old["consensus_address"]:
-                validator["address"] = new["address"]
-                found_validator = True
-                break
+        old_consensus_address = old["consensus_address"]
+        new_consensus_address = new["consensus_address"]
 
-        if not found_validator:
-            raise Exception("Could not find validator in missed blocks")
-
-        found_validator = False
-        for validator in signing_infos:
-            if validator["address"] == old["consensus_address"]:
-                validator["address"] = new["address"]
-                found_validator = True
-                break
-
-        if not found_validator:
-            raise Exception("Could not find validator in signing infos")
+        _swap_address_in_list(
+            old_consensus_address, new_consensus_address, missed_blocks)
+        _swap_address_in_list(
+            old_consensus_address, new_consensus_address, signing_infos)
 
         return self
 
@@ -161,6 +193,9 @@ class GenesisTinker:
         """
         Swaps out an exsiting delegator with a new one
         """
+
+        self.log_step("Swapping delegator address " +
+                      old_address + " to " + new_address)
 
         accounts = self.genesis["app_state"]["auth"]["accounts"]
         balances = self.genesis["app_state"]["bank"]["balances"]
@@ -197,6 +232,7 @@ class GenesisTinker:
                 found_delegation = True
                 break
 
+        # TODO: Check for exceptions?
         if not found_delegation:
             raise Exception("Could not find old delegator stake")
 
@@ -211,6 +247,8 @@ class GenesisTinker:
         """
         Creates a new coin based on a given name if it doesn't exist
         """
+
+        self.log_step("Creating new coin " + denom + " valued at " + amount)
 
         supplies = self.genesis["app_state"]["bank"]["supply"]
 
@@ -227,6 +265,9 @@ class GenesisTinker:
         """
         Increases the balance of a person and also the overall supply of uatom
         """
+
+        self.log_step("Increasing balance of " + address +
+                      " by " + str(increase) + " " + denom)
 
         balances = self.genesis["app_state"]["bank"]["balances"]
 
@@ -258,6 +299,8 @@ class GenesisTinker:
         Increase the total supply of coins of a given denomination
         """
 
+        self.log_step("Increasing supply of " + denom + " by " + str(increase))
+
         supplies = self.genesis["app_state"]["bank"]["supply"]
 
         found_coin = False
@@ -279,6 +322,10 @@ class GenesisTinker:
         Increase the staking power of a validator
         Also increases the last total power value
         """
+
+        self.log_step("Increasing validator power of " +
+                      validator_address + " by " + str(power_increase))
+
         validators = self.genesis['validators']
 
         found_validator = False
@@ -306,6 +353,10 @@ class GenesisTinker:
         """
         Increases the stake of a validator as well as its delegator_shares
         """
+
+        self.log_step("Increasing validator stake of " +
+                      operator_address + " by " + str(increase))
+
         staking_validators = self.genesis["app_state"]["staking"]["validators"]
 
         found_validator = False
@@ -332,6 +383,10 @@ class GenesisTinker:
         """
         Increases the stake for a delegator
         """
+
+        self.log_step("Increasing delegator stake of " +
+                      delegator_address + " by " + str(increase))
+
         starting_infos = self.genesis["app_state"]["distribution"]["delegator_starting_infos"]
 
         found_stake = False
@@ -348,3 +403,14 @@ class GenesisTinker:
             raise Exception("Unable to find delegator_address")
 
         return self
+
+    def increase_delegator_stake_to_validator(self, delegator, validator, stake, token_bonding_pool_address=TOKEN_BONDING_POOL_ADDRESS):  # pylint: disable=C0301
+        """
+        Increase a delegator's stake to a validator.
+        Includes increasing token bonding pool balance and validator power
+        """
+
+        self.increase_balance(token_bonding_pool_address, stake)
+        self.increase_delegator_stake(delegator, stake)
+        self.increase_validator_stake(validator, stake)
+        self.increase_validator_power(validator, stake)
