@@ -14,7 +14,8 @@ import tarfile
 import requests
 
 BINANCE_VALIDATOR_ADDRESS = "cosmosvaloper156gqf9837u7d4c4678yt3rl4ls9c5vuursrrzf"
-BINANCE_TOKEN_BONDING_POOL_ADDRESS = "cosmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu34mf0eh"
+# Default value is the cosmoshub-4 bonded token pool account
+TOKEN_BONDING_POOL_ADDRESS = "cosmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu34mf0eh"
 
 DEFAULT_POWER = 6000000000
 POWER_TO_TOKENS = 1000000
