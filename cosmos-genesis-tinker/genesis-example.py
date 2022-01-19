@@ -55,6 +55,8 @@ else:
 
 print("Tinkering")
 
+genesis.swap_chain_id("cosmos-genesis-tinker-example")
+
 genesis.swap_validator({
     "pub_key": NODE1_OLD_PUBKEY,
     "address": NODE1_OLD_ADDRESS,

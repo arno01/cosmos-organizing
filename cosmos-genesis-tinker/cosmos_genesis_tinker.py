@@ -47,11 +47,13 @@ class GenesisTinker:
         """
 
         if not self.should_log_steps:
-            return
+            return -1
 
         self.__step_count += 1
         step_count = str(self.__step_count)
         print(step_count + ". " + message)
+
+        return step_count
 
     def load_file(self, path):
         """
@@ -131,6 +133,17 @@ class GenesisTinker:
 
         with open(path, "w", encoding="utf8") as file:
             json.dump(self.genesis, file, indent=False)
+
+        return self
+
+    def swap_chain_id(self, chain_id):
+        """
+        Swap the chain ID with your own name
+        """
+
+        self.log_step("Swapping chain id to " + chain_id)
+
+        self.genesis["chain_id"] = chain_id
 
         return self
 
@@ -414,3 +427,5 @@ class GenesisTinker:
         self.increase_delegator_stake(delegator, stake)
         self.increase_validator_stake(validator, stake)
         self.increase_validator_power(validator, stake)
+
+        return self
