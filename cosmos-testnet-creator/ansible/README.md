@@ -20,11 +20,14 @@ genesis_url= https://example.com/genesis.json.gz
 
 # Connect nodes together via the validator IPs
 # TODO: Can we access the [validators] group and pull the IPs from there?
+# Specify persistent_peers_groups to pull groups from persistent peers
 persistent_peers="127.0.0.1:26656,4.20.1.3:26656,6.6.6.9:26656"
 
 # Configure gaiad nodes to connect to prometheus for monitoring
 prometheus_host=prometheus.hypha.org:26660
 
+# Prefer hostnames over IPs
+# Output IPS with ports for services in ansible scripts
 [validators]
 127.0.0.1
 4.20.1.3
@@ -72,7 +75,7 @@ gaiad tx staking create-validator \
   --from=<key_name>
 ```
 
-Who runs this? Should we have an easy way to pull the validator info from remote validator nodes as a function of the ansible scripts?
+This should be run by whoever is setting up the nodes after they have been configured.
 
 ## Dream Playbook - Testnet 2
 
@@ -94,14 +97,6 @@ validator_id="something or other??"
 sentry-playbook.yaml
 
 ```yaml
-- name: Set up sentry node
-  - hosts: sentry
-  - roles:
-    - role: full_node
-      vars:
-        prune: false
-        private_peer_ids: "{{ validator_id }}"
-        addressbook_url: "https://quicksync.io/addrbook.cosmos-testnet.json"
 - name: Set up validator
   - hosts: validator
   - roles:
@@ -109,6 +104,16 @@ sentry-playbook.yaml
       vars:
         pex:false
         persistent_peers: "{{groups['sentry'][0].ansible_hostname}}:26656"
+- name: Set up sentry node
+  - hosts: sentry
+  - roles:
+    - role: full_node
+      vars:
+        prune: false
+        # Pull ID from groups, same as persistent peers
+        # Use gaiad command to get the ID
+        private_peer_ids: "{{ validator_id }}"
+        addressbook_url: "https://quicksync.io/addrbook.cosmos-testnet.json"
 ```
 
 ### Dream Playbook 3 - Custom keys, hardcoded config files
@@ -122,7 +127,7 @@ all:
   vars:
     gaiad_version: "v4.2.0"
     # Specify paths that all the nodes should use for the `.toml` config files
-    # Note that this will override any variables that would normally configure those files
+    # You can also specify variables which will override values in the files
     app_toml: "./app.toml"
     client_toml: "./client.toml"
     config_toml: "./config.toml"
@@ -136,7 +141,9 @@ all:
 		      node_key_path: "./exammple2-node_key.json"
 		    example3.hypha.com:
 		      # You can specify the key inline or using variables
-		      node_key: "{\"priv_key\": {\"type\": \"Whatever, you get it\"}}"
+		      node_key: "{\"priv_key\": {\"type\": \"Whatever, you get it\"}}
+		      # You can override the defaul values in the provided configs"
+		      pex: false
 ```
 
 customkeys-playbook.yaml
@@ -153,6 +160,9 @@ customkeys-playbook.yaml
 - Ansible Roles for configuring machines
 	- Gaiad (the base layer for gaia nodes)
 		- run as systemd service
+    - Cosmovisor runs as the service
+			- Should be able to pull versions from Github and compile them
+			- Expose cosmovisor version (release tag or commit, same as gaiad)
 		- Custom monicker (default to hostname?)
 		- version, for git tag
 		- custom genesis file (from local FS or URL)
@@ -172,27 +182,26 @@ customkeys-playbook.yaml
 			- prometheus (listen_addr)
 		- addressbook.json
 		  - Specify a path or a URL (quicksync?)
-		- Cosmovisor?
-			- Should be able to pull versions from Github and compile them
+		- Set minimum gas price
 		- Firewall
 			- Block things by default?
 			- Open relevant ports as needed?
 			- Based on Elon's [scripts](https://github.com/hyphacoop/ansibles/blob/master/distributed-press/srv1.distributed.press/roles/firewall/tasks/rules.yml)
-  - Full Node (extend Gaiad)
-  	- pruning: "nothing" to keep full history
 	- Validator (extends Gaiad)
 		- Sane defaults for setting up a validator node
-			- No extra services
-			- Not full? (pruning?)
-			- configure validator keys
-			- Easy to have it peer with just a single peer
+		- No snapshots
+		- Default pruning
+		- configure validator keys
   - SentriedValidator (extends Validator)
+		- Disable GRPC, RPC
     - Set to be put behind a sentry node
-      - P2P disabled and only the sentry node is allowed to connect
-    - More aggressive pruning?
+    	- Firewall rules block all connections except sentry
+    - P2P disabled and only the sentry node is allowed to connect
     - `sentry_node` variable to configure the sentry in the persistent_peers?
+    	- Error out if not specified
 	- Statesync (extends Full Node?)
 		- enables statesync and advertising itself
+		- Snapshots enabled
 	- Archive (extend Full Node)
 		- Full node
 		- No pruning
@@ -211,3 +220,5 @@ customkeys-playbook.yaml
   	- Collect stats
   - IBC Relay
   	- TODO: What is needed here?
+  - Faucet node
+    - TODO: What is needed here?

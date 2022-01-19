@@ -1,0 +1,11 @@
+- name: Set up dependencies
+- name: Set up golang (check if exists first)
+- name: set up firewall (block by default?)
+- name: clone gaiad
+- name: checkout tag/version
+- name: build gaiad with golang
+- name: initialize gaiad
+- name: copy configs (if they exist)
+- name: patch configs with variables
+- name: configure systemd service and run it
+- name: print info about the node?
