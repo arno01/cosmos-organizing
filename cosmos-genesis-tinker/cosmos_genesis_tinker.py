@@ -209,7 +209,7 @@ class GenesisTinker:
 
     def create_coin(self, denom, amount="0"):
         """
-        Creats a new coin based on a given name if it doesn't exist
+        Creates a new coin based on a given name if it doesn't exist
         """
 
         supplies = self.genesis["app_state"]["bank"]["supply"]
