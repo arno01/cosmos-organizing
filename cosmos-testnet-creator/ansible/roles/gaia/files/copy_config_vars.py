@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 This script takes a JSON config file and patches `.toml` files with its values
 """
@@ -17,8 +19,6 @@ args = vars(parser.parse_args())
 gaiad_home = args["gaiad_home"]
 config_file = args["config_file"]
 
-update_config_files(config_file, gaiad_home)
-
 
 def update_config_files(source_config, destination_folder):
     """
@@ -27,7 +27,7 @@ def update_config_files(source_config, destination_folder):
     with open(source_config, "r", encoding="utf8") as file:
         config = json.load(file)
         for file_name, var_map in config.items():
-            file_path = destination_folder + "/" + file_name
+            file_path = destination_folder + "/config/" + file_name
             update_config(file_path, var_map)
 
 
@@ -54,9 +54,13 @@ def set_nested(nested_dict, path, value):
     """
     Sets a value that's deeply nested within a dict
     """
+
     segments = path.split('.')
     final_field = segments.pop()
     current_val = nested_dict
     for subpath in segments:
         current_val = current_val[subpath]
     current_val[final_field] = value
+
+
+update_config_files(config_file, gaiad_home)

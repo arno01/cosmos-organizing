@@ -1,48 +1,72 @@
-# Roughly based on this: https://hackmd.io/ak4LzC-JSNSukbtVF0jbjg?view
-
-- name: Set up dependencies
+---
+- name: Set up apt dependencies
   apt:
     pkg:
       - build-essential
       - git
       - wget
       - curl
+      - python3
+      - python3-pip
+- name: Set up pip dependencies
+  pip:
+    name: toml
+
+- name: Check golang version
+  shell: |
+    PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
+    go version
+  register: go_current_version
+  ignore_errors: true
 - name: Set up golang
-  # TODO: Vars for golang version
-  # TODO: Check if golang exists first
-  shell: "wget -q -O - https://git.io/vQhTU | bash -s - --version 1.15"
+  when: not go_version in go_current_version.stdout
+  # TODO: Auto-detect go_arch
+  shell: |
+    wget https://golang.org/dl/go{{go_version}}.{{go_arch}}.tar.gz
+    sudo tar -C /usr/local -xzf go1.16.4.linux-amd64.tar.gz
+    echo 'export PATH=\$PATH:/usr/local/go/bin:$HOME/go/bin" >> ~/.profile'
 
 # TODO: Firewall
-#- name: set up firewall (block by default?)
+# - name: set up firewall (block by default?)
 
-- name: clone and install gaiad
+- name: Check gaiad version
   shell: |
+    PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
+    gaiad version
+  register: gaiad_current_version
+  ignore_errors: true
+- name: clone and install gaiad
+  when: not gaiad_version in gaiad_current_version.stdout
+  shell: |
+    PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
     git clone {{gaiad_repository}}
     cd gaia
     git checkout {{gaiad_version}}
     make install
 - name: initialize gaiad
+  # TODO: should we overwrite?
   shell: |
-     giad init {{inventory_hostname}} --home {{gaiad_home}}
+    PATH=$PATH:/usr/local/go/bin:$HOME/go/bin
+    gaiad init {{inventory_hostname}} --home {{gaiad_home}} --overwrite
 
 # Genesis file configuration
 - name: download genesis file
   when: genesis_url is defined
   shell: |
-    wget {{genesis_url}}
+    wget {{genesis_url}} -O genesis.json.gz
     # TODO: Account for different filenames?
     gunzip -c genesis.json.gz > {{gaiad_home}}/config/genesis.json
 - name: copy genesis.json
   when: genesis_file is defined
   copy:
-    src: {{genesis_file}}
-    dest: {{gaiad_home}}/config/genesis.json
+    src: '{{genesis_file}}'
+    dest: '{{gaiad_home}}/config/genesis.json'
 - name: verify genesis file
   when: genesis_shasum is defined
+  # Throw an error if shasum doesn't match
   shell: |
-    GENESIS_SHASUM=$(sha256sum {{gaiad_home}}/config/genesis.json)
-    if [ $GENESIS_SHASUM = {{genesis_shasum}} ]; then
-      # Throw an error if shasum doesn't match
+    GENESIS_SHASUM="$(sha256sum {{ gaiad_home }}/config/genesis.json)"
+    if [ $GENESIS_SHASUM != {{ genesis_shasum }} ]; then
       exit 1
     fi
       exit 0
@@ -51,30 +75,30 @@
 - name: copy app.toml
   when: app_toml_file is defined
   copy:
-    src: {{app_toml_file}}
-    dest: {{gaiad_home}}/config/app.toml
+    src: '{{app_toml_file}}'
+    dest: '{{gaiad_home}}/config/app.toml'
 - name: copy config.toml
   when: config_toml_file is defined
   copy:
-    src: {{config_toml_file}}
-    dest: {{gaiad_home}}/config/config.toml
+    src: '{{config_toml_file}}'
+    dest: '{{gaiad_home}}/config/config.toml'
 - name: copy node_key.json
   when: node_key_file is defined
   copy:
-    src: {{node_key_file}}
-    dest: {{gaiad_home}}/config/node_key.json
+    src: '{{node_key_file}}'
+    dest: '{{gaiad_home}}/config/node_key.json'
 - name: copy priv_validator_key.json
   when: priv_validator_key_file is defined
   copy:
-    src: {{priv_validator_key_file}}
-    dest: {{gaiad_home}}/config/priv_validator_key.json
+    src: '{{priv_validator_key_file}}'
+    dest: '{{gaiad_home}}/config/priv_validator_key.json'
 
 ## Addressbook config
 - name: copy addrbook.json
   when: addrbook_file is defined
   copy:
-    src: {{addrbook_file}}
-    dest: {{gaiad_home}}/config/addrbook_file.json
+    src: '{{addrbook_file}}'
+    dest: '{{gaiad_home}}/config/addrbook_file.json'
 - name: download addrbook.json from URL
   when: addrbook_url is defined
   shell: |
@@ -84,13 +108,15 @@
 - name: generate config json for patching toml files
   template:
     src: ansible_vars.json.j2
-    dest: {{gaiad_home}}/config/ansible_vars.json
+    dest: '{{gaiad_home}}/config/ansible_vars.json'
 - name: patch .toml configs with ansible variables
-  script: copy_config_vars.py --gaiad_home={{gaiad_home}} --config_file={{gaiad_home}}/config/ansible_vars.json
+  script: |
+    copy_config_vars.py --gaiad_home=$(echo {{gaiad_home}}) \
+      --config_file=$(echo {{gaiad_home}}/config/ansible_vars.json)
 - name: delete generated config json
   file:
     state: absent
-    path: {{gaiad_home}}/config/ansible_vars.json
+    path: '{{gaiad_home}}/config/ansible_vars.json'
 
 # Service setup
 - name: configure systemd service and run it
@@ -99,11 +125,11 @@
     dest: /etc/systemd/system/gaiad.service
 - name: Reload systemd daemon
   systemd:
-    daemon_reload: yes
+    daemon_reload: true
 - name: Start systemd service
   systemd:
     state: started
     name: gaiad
 
 # Misc output?
-#- name: print info about the node?
+# - name: print info about the node?
