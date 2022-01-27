@@ -5,7 +5,6 @@
       - build-essential
       - git
       - wget
-      - curl
       - python3
       - python3-pip
 - name: Set up pip dependencies
@@ -18,12 +17,16 @@
     go version
   register: go_current_version
   ignore_errors: true
-- name: Set up golang
+- name: Download golang
+  when: not go_version in go_current_version.stdout
+  get_url:
+    url: "https://golang.org/dl/go{{go_version}}.{{go_arch}}.tar.gz"
+    dest: go.tar.gz
+- name: Extract golang
   when: not go_version in go_current_version.stdout
   # TODO: Auto-detect go_arch
   shell: |
-    wget https://golang.org/dl/go{{go_version}}.{{go_arch}}.tar.gz
-    sudo tar -C /usr/local -xzf go1.16.4.linux-amd64.tar.gz
+    sudo tar -C /usr/local -xzf go.tar.gz
     echo 'export PATH=\$PATH:/usr/local/go/bin:$HOME/go/bin" >> ~/.profile'
 
 # TODO: Firewall
@@ -54,7 +57,6 @@
   when: genesis_url is defined
   shell: |
     wget {{genesis_url}} -O genesis.json.gz
-    # TODO: Account for different filenames?
     gunzip -c genesis.json.gz > {{gaiad_home}}/config/genesis.json
 - name: copy genesis.json
   when: genesis_file is defined
@@ -101,8 +103,9 @@
     dest: '{{gaiad_home}}/config/addrbook_file.json'
 - name: download addrbook.json from URL
   when: addrbook_url is defined
-  shell: |
-    curl {{addrbook_url}} > {{gaiad_home}}/config/addrbook.json
+  get_url:
+    url: "{{addrbook_url}}"
+    dest: "{{gaiad_home}}/config/addrbook.json"
 
 ## Patching Config files
 - name: generate config json for patching toml files
