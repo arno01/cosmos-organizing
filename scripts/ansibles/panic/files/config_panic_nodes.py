@@ -38,7 +38,7 @@ def reorder_nodes():
 	reorder_count = 0
 	for node in config:
 		try:
-			if (node != 'DEFAULT'):
+			if node != 'DEFAULT':
 				new_node_id = ("node_" + str(reorder_count))
 				new_config[new_node_id] = {}
 				new_config[new_node_id]['node_name'] = config[node]['node_name']
@@ -55,7 +55,7 @@ def reorder_nodes():
 # add and update section
 if operation == 'add':
 	# check for input errors
-	if (( not filename ) or ( not new_node_name ) or ( not new_node_rpc_url ) or ( not new_node_rpc_port ) or ( not new_node_is_validator ) or ( not new_include_in_node_monitor ) or ( not new_include_in_network_monitor )):
+	if ((not filename) or (not new_node_name) or (not new_node_rpc_url) or (not new_node_rpc_port) or (not new_node_is_validator) or (not new_include_in_node_monitor) or (not new_include_in_network_monitor)):
 		print("Invalid options")
 		sys.exit(1)
 
@@ -75,7 +75,7 @@ if operation == 'add':
 					config[node_key]['include_in_node_monitor'] = 'true'
 				else:
 					config[node_key]['include_in_node_monitor'] = 'false'
-				
+
 				if new_include_in_network_monitor == 'yes':
 					config[node_key]['include_in_network_monitor'] = 'true'
 				else:
@@ -108,7 +108,7 @@ if operation == 'add':
 			new_config[new_node_id]['include_in_node_monitor'] = 'true'
 		else:
 			new_config[new_node_id]['include_in_node_monitor'] = 'false'
-		
+
 		if new_include_in_network_monitor == 'yes':
 			new_config[new_node_id]['include_in_network_monitor'] = 'true'
 		else:
@@ -122,7 +122,7 @@ if operation == 'add':
 # delete section
 elif operation == 'del':
 	# check for input errors
-	if (( not filename ) or ( not new_node_name )):
+	if ((not filename) or (not new_node_name)):
 		print("Invalid options")
 		sys.exit(1)
 
@@ -146,5 +146,5 @@ elif operation == 'del':
 		config.remove_section(node_id)
 		reorder_nodes()
 		with open(filename, 'w') as configfile:
-				new_config.write(configfile)
-				sys.exit(0)
+			new_config.write(configfile)
+			sys.exit(0)
