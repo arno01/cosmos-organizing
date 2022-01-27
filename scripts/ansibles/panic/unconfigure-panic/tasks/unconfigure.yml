@@ -9,7 +9,7 @@
 
 - name: Unconfigure PANIC with config_panic_nodes.py
   script:
-    cmd: config_panic_nodes.py {{ config_file }} del {{ node_name }}
+    cmd: config_panic_nodes.py --config_file {{ config_file }} --operation del --node_name {{ node_name }}
     become_user: panic
 
 - name: Restart PANIC

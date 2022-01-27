@@ -1,36 +1,31 @@
 #!/usr/bin/env python3
 
-import configparser, sys, math
+import configparser, sys, math, argparse
 
-# print useage
-def print_usage():
-	print('Usage:   ./config_panic_nodes.py [config_file] add [node name] [node_rpc_url] [node_rpc_port] [node_is_validator] [include_in_node_monitor] [include_in_network_monitor]')
-	print('Example: ./config_panic_nodes.py user_config_nodes.ini add full-node-01.vega-testnet full-node-01.vega-testnet.prod.earthball.xyz 26657 0 1 1')
-	print('Example: ./config_panic_nodes.py user_config_nodes.ini del full-node-01.vega-testnet')
-	print('add: adds and update existing nodes to PANIC config')
-	print('del: deletes existing nodes in PANIC config')
+# argparse
+parser = argparse.ArgumentParser(description='Configure PANIC user_config_nodes.ini file')
+parser.add_argument('--config_file')
+parser.add_argument('--operation')
+parser.add_argument('--node_name')
+parser.add_argument('--node_rpc_url')
+parser.add_argument('--node_rpc_port')
+parser.add_argument('--node_is_validator')
+parser.add_argument('--include_in_node_monitor')
+parser.add_argument('--include_in_network_monitor')
 
-# check number of args matches
-if len(sys.argv) != 4 and len(sys.argv) != 9:
-	print('Invald number of arguments')
-	print_usage()
-	sys.exit(1)
+args = parser.parse_args()
 
-filename = sys.argv[1]
-operation = sys.argv[2]
+filename = args.config_file
+operation = args.operation
+new_node_name = args.node_name
+new_node_rpc_url = args.node_rpc_url
+new_node_rpc_port = args.node_rpc_port
+new_node_is_validator = args.node_is_validator
+new_include_in_node_monitor = args.include_in_node_monitor
+new_include_in_network_monitor = args.include_in_network_monitor
 
-# check operations args
-if operation == 'add' and len(sys.argv) != 9:
-	print('Invald number of arguments for add operation')
-	print_usage()
-	sys.exit(1)
-elif operation == 'del' and len(sys.argv) != 4:
-	print('Invald number of arguments for del operation')
-	print_usage()
-	sys.exit(1)
-elif operation != 'del' and operation != 'add':
-	print('Invalid operation. Must be add or del')
-	print_usage()
+if not filename:
+	print("--filename not set")
 	sys.exit(1)
 
 node_found = 0
@@ -59,43 +54,42 @@ def reorder_nodes():
 
 # add and update section
 if operation == 'add':
-	new_node_name = sys.argv[3]
-	new_node_rpc_url = sys.argv[4]
-	new_node_rpc_port = sys.argv[5]
-	new_node_is_validator = sys.argv[6]
-	new_include_in_node_monitor = sys.argv[7]
-	new_include_in_network_monitor = sys.argv[8]
+	# check for input errors
+	if (( not filename ) or ( not new_node_name ) or ( not new_node_rpc_url ) or ( not new_node_rpc_port ) or ( not new_node_is_validator ) or ( not new_include_in_node_monitor ) or ( not new_include_in_network_monitor )):
+		print("Invalid options")
+		sys.exit(1)
 
 	# check if node already exists and update its values and if not add a new entry
-	for node in config:
+	for node_key, node in config.items():
 		try:
-			if config[node]['node_name'] == new_node_name:
-				print("Node:", config[node]['node_name'], " already exists in key:", node)
+			if config[node_key]['node_name'] == new_node_name:
+				print("Node:", config[node_key]['node_name'], " already exists in key:", node_key)
 				print('Updating the values')
-				config[node]['node_rpc_url'] = ("http://" + new_node_rpc_url + ":" + new_node_rpc_port)
-				if new_node_is_validator == '1':
-					config[node]['node_is_validator'] = 'true'
+				config[node_key]['node_rpc_url'] = ("http://" + new_node_rpc_url + ":" + new_node_rpc_port)
+				if new_node_is_validator == 'yes':
+					config[node_key]['node_is_validator'] = 'true'
 				else:
-					config[node]['node_is_validator'] = 'false'
+					config[node_key]['node_is_validator'] = 'false'
 
-				if new_include_in_node_monitor == '1':
-					config[node]['include_in_node_monitor'] = 'true'
+				if new_include_in_node_monitor == 'yes':
+					config[node_key]['include_in_node_monitor'] = 'true'
 				else:
-					config[node]['include_in_node_monitor'] = 'false'
+					config[node_key]['include_in_node_monitor'] = 'false'
 				
-				if new_include_in_network_monitor == '1':
-					config[node]['include_in_network_monitor'] = 'true'
+				if new_include_in_network_monitor == 'yes':
+					config[node_key]['include_in_network_monitor'] = 'true'
 				else:
-					config[node]['include_in_network_monitor'] = 'false'
-				node_found = 1
+					config[node_key]['include_in_network_monitor'] = 'false'
+				node_found = True
 			node_count = node_count + 1
 		except:
 			KeyError
 
 	# if node_found is set write file and quit else add a new node
-	if node_found == 1:
+	if node_found == True:
 		with open(filename, 'w') as configfile:
 			config.write(configfile)
+			print('Updated values in file')
 			sys.exit(0)
 	else:
 		print("Node not found adding to the config")
@@ -105,39 +99,45 @@ if operation == 'add':
 		new_config[new_node_id] = {}
 		new_config[new_node_id]['node_name'] = new_node_name
 		new_config[new_node_id]['node_rpc_url'] = ("http://" + new_node_rpc_url + ":" + new_node_rpc_port)
-		if new_node_is_validator == '1':
+		if new_node_is_validator == 'yes':
 			new_config[new_node_id]['node_is_validator'] = 'true'
 		else:
 			new_config[new_node_id]['node_is_validator'] = 'false'
 
-		if new_include_in_node_monitor == '1':
+		if new_include_in_node_monitor == 'yes':
 			new_config[new_node_id]['include_in_node_monitor'] = 'true'
 		else:
 			new_config[new_node_id]['include_in_node_monitor'] = 'false'
 		
-		if new_include_in_network_monitor == '1':
+		if new_include_in_network_monitor == 'yes':
 			new_config[new_node_id]['include_in_network_monitor'] = 'true'
 		else:
 			new_config[new_node_id]['include_in_network_monitor'] = 'false'
 
 		with open(filename, 'w') as configfile:
 			new_config.write(configfile)
+			print('Added new node to file')
 			sys.exit(0)
 
 # delete section
 elif operation == 'del':
+	# check for input errors
+	if (( not filename ) or ( not new_node_name )):
+		print("Invalid options")
+		sys.exit(1)
+
 	node_count = 0
-	del_node_name = sys.argv[3]
+	del_node_name = new_node_name
 	for node in config:
 		try:
 			if config[node]['node_name'] == del_node_name:
-				node_found = 1
+				node_found = True
 				node_num = node_count
 			node_count = node_count + 1
 		except:
 			KeyError
 
-	if node_found != 1:
+	if node_found != True:
 		print('Cannot find node:', del_node_name, 'to delete')
 		sys.exit(1)
 	else:

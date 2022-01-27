@@ -3,7 +3,7 @@
 ### Configure PANIC on monitoring server
 
 To add a node to PANIC config file run the `configure_panic.yml` playbook:
-`ansible-playbook -i root@monitor.prod.earthball.xyz, configure_panic.yml --extra-vars "config_file=/home/panic/panic_cosmos/config/user_config_nodes.ini node_name=node1.vega-testnet hostname=node1.vega-testnet.prod.earthball.xyz rpc_port=26657 is_validator=1 include_in_node_monitor=1 include_in_network_monitor=1"`
+`ansible-playbook -i root@monitor.prod.earthball.xyz, configure_panic.yml --extra-vars "config_file=/home/panic/panic_cosmos/config/user_config_nodes.ini node_name=node1.vega-testnet hostname=node1.vega-testnet.prod.earthball.xyz rpc_port=26657 is_validator=yes include_in_node_monitor=yes include_in_network_monitor=yes"`
 
 Variables:
 - `config_file` is where the PANIC config file is
