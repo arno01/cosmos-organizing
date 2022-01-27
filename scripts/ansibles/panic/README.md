@@ -10,9 +10,9 @@ Variables:
 - `node_name` is the name of the node normally the first part of the hostname
 - `hostname` is the FQDN of the node
 - `rpc_port` is the gaiad RPC port normally 26657
-- `is_validator` set to `1` if the node is a validator if not set to `0`
-- `include_in_node_monitor` set to `1`  to include in node monitor if not set to `0`
-- `include_in_network_monitor` set to `1`  to include in network monitor if not set to `0`
+- `is_validator` set to `yes` if the node is a validator if not set to `no`
+- `include_in_node_monitor` set to `yes`  to include in node monitor if not set to `no`
+- `include_in_network_monitor` set to `yes`  to include in network monitor if not set to `no`
 
 
 To remove a node from PANIC config file simply run the `unconfigure_panic.yml` playbook with the `node_name` variable set:
