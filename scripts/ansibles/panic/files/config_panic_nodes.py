@@ -4,29 +4,34 @@ import configparser, sys, math, argparse
 
 # argparse
 parser = argparse.ArgumentParser(description='Configure PANIC user_config_nodes.ini file')
-parser.add_argument('--config_file')
-parser.add_argument('--operation')
-parser.add_argument('--node_name')
-parser.add_argument('--node_rpc_url')
-parser.add_argument('--node_rpc_port')
-parser.add_argument('--node_is_validator')
-parser.add_argument('--include_in_node_monitor')
-parser.add_argument('--include_in_network_monitor')
+subparser = parser.add_subparsers()
+parser.add_argument('--config_file', required=True)
+
+parser_add = subparser.add_parser('add')
+parser_add.add_argument('--node_name', required=True)
+parser_add.add_argument('--node_rpc_url', required=True)
+parser_add.add_argument('--node_rpc_port', required=True)
+parser_add.add_argument('--node_is_validator', required=True)
+parser_add.add_argument('--include_in_node_monitor', required=True)
+parser_add.add_argument('--include_in_network_monitor', required=True)
+parser_add.set_defaults(operation='add')
+
+parser_del = subparser.add_parser('del')
+parser_del.add_argument('--node_name', required=True)
+parser_del.set_defaults(operation='del')
 
 args = parser.parse_args()
 
 filename = args.config_file
-operation = args.operation
 new_node_name = args.node_name
-new_node_rpc_url = args.node_rpc_url
-new_node_rpc_port = args.node_rpc_port
-new_node_is_validator = args.node_is_validator
-new_include_in_node_monitor = args.include_in_node_monitor
-new_include_in_network_monitor = args.include_in_network_monitor
+operation = args.operation
 
-if not filename:
-	print("--filename not set")
-	sys.exit(1)
+if operation == 'add':
+	new_node_rpc_url = args.node_rpc_url
+	new_node_rpc_port = args.node_rpc_port
+	new_node_is_validator = args.node_is_validator
+	new_include_in_node_monitor = args.include_in_node_monitor
+	new_include_in_network_monitor = args.include_in_network_monitor
 
 node_found = 0
 node_count = 0
@@ -54,11 +59,6 @@ def reorder_nodes():
 
 # add and update section
 if operation == 'add':
-	# check for input errors
-	if ((not filename) or (not new_node_name) or (not new_node_rpc_url) or (not new_node_rpc_port) or (not new_node_is_validator) or (not new_include_in_node_monitor) or (not new_include_in_network_monitor)):
-		print("Invalid options")
-		sys.exit(1)
-
 	# check if node already exists and update its values and if not add a new entry
 	for node_key, node in config.items():
 		try:
@@ -121,11 +121,6 @@ if operation == 'add':
 
 # delete section
 elif operation == 'del':
-	# check for input errors
-	if ((not filename) or (not new_node_name)):
-		print("Invalid options")
-		sys.exit(1)
-
 	node_count = 0
 	del_node_name = new_node_name
 	for node in config:
