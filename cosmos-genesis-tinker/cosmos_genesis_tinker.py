@@ -63,9 +63,8 @@ class GenesisTinker:
         self.log_step("Loading genesis from file " + path)
 
         with open(path, "r", encoding="utf8") as file:
-            content = file.read()
-            file.close()
-            self.genesis = json.load(content)
+            self.genesis = json.load(file)
+            file.close
         return self
 
     def load_url(self, url, shasum=False):
