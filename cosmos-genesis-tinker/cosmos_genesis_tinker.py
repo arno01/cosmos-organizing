@@ -18,7 +18,8 @@ TOKEN_BONDING_POOL_ADDRESS = "cosmos1fl48vsnmsdzcv85q5d2q4z5ajdha8yu34mf0eh"
 
 DEFAULT_POWER = 6000000000
 POWER_TO_TOKENS = 1000000
-
+DEFAULT_NAME = "hy-hydrogen"
+DEFAULT_PUBKEY = "1Lt+cRGXjtRDlQSoQ+DPWj/GNYOzl+0U+7BFAvruu5s="
 
 def _swap_address_in_list(old_address, new_address, validators):
     found_validator = False
@@ -329,10 +330,28 @@ class GenesisTinker:
 
         return self
 
-    def increase_validator_power(self, validator_address, power_increase=DEFAULT_POWER):
+    def increase_validator_power(self, validator_address, power_increase=DEFAULT_POWER, name=DEFAULT_NAME, pub_key=DEFAULT_PUBKEY):
         """
         Increase the staking power of a validator
         Also increases the last total power value
+
+        If validator isn't found in genesis["validators"],
+        it doesn't exist in the validator set of top 150 validators
+        by voting power. In that case, if the voting power increase
+        is larger than the smallest validator by voting power,
+        replace the smallest validator
+
+        validators in the genesis["validators"] looks like this:
+        {
+            'address': 'EBED694E6CE1224FB1E8A2DD8EE63A38568B1E2B', 
+            'name': 'Umbrella ☔', 
+            'power': '471680', 
+            'pub_key': 
+                {
+                    'type': 'tendermint/PubKeyEd25519', 
+                    'value': 'z/Dg9WU/rlIB+LaQVMMHW/a7rvalfIcyz3VdOwfvguc='
+                }
+        }
         """
 
         self.log_step("Increasing validator power of " +
@@ -341,21 +360,34 @@ class GenesisTinker:
         validators = self.genesis['validators']
 
         found_validator = False
+        smallest_validator_index = 0
+        smallest_validator_power = int(validators[smallest_validator_index]["power"])
+        last_total_power = int(
+            self.genesis['app_state']['staking']['last_total_power'])
 
-        for validator in validators:
+        for index, validator in enumerate(validators):
             if validator["address"] == validator_address:
                 old_power = int(validator["power"])
                 new_power = old_power + power_increase
                 validator["power"] = str(new_power)
                 found_validator = True
-                break
+            if int(validator["power"]) < smallest_validator_power:
+                smallest_validator_index = index
+                smallest_validator_power = int(validator["power"])
 
         if not found_validator:
-            raise Exception('Could not find validator_address')
+            if smallest_validator_power < power_increase:
+                self.log_step("Adding validator to validator set")
+                validators[smallest_validator_index]["power"] = str(power_increase)
+                validators[smallest_validator_index]["address"] = validator_address
+                validators[smallest_validator_index]["pub_key"]["value"] = pub_key
+                validators[smallest_validator_index]["name"] = name
+                new_last_total_power = last_total_power + power_increase - smallest_validator_power
+            else:
+                raise Exception('Could not add validator to validator set due to low power')
+        else:
+            new_last_total_power = last_total_power + power_increase
 
-        last_total_power = int(
-            self.genesis['app_state']['staking']['last_total_power'])
-        new_last_total_power = last_total_power + power_increase
         self.genesis["app_state"]["staking"]["last_total_power"] = str(
             new_last_total_power)
 
@@ -425,6 +457,6 @@ class GenesisTinker:
         self.increase_balance(token_bonding_pool_address, stake)
         self.increase_delegator_stake(delegator, stake)
         self.increase_validator_stake(operator_address, stake)
-        self.increase_validator_power(validator_address, stake/power_to_tokens)
+        self.increase_validator_power(validator_address, int(stake/power_to_tokens))
 
         return self
