@@ -416,7 +416,7 @@ class GenesisTinker:
 
         return self
 
-    def increase_delegator_stake_to_validator(self, delegator, validator, stake, token_bonding_pool_address=TOKEN_BONDING_POOL_ADDRESS):  # pylint: disable=C0301
+    def increase_delegator_stake_to_validator(self, delegator, operator_address, validator_address, stake, power_to_tokens=POWER_TO_TOKENS, token_bonding_pool_address=TOKEN_BONDING_POOL_ADDRESS):  # pylint: disable=C0301
         """
         Increase a delegator's stake to a validator.
         Includes increasing token bonding pool balance and validator power
@@ -424,7 +424,7 @@ class GenesisTinker:
 
         self.increase_balance(token_bonding_pool_address, stake)
         self.increase_delegator_stake(delegator, stake)
-        self.increase_validator_stake(validator, stake)
-        self.increase_validator_power(validator, stake)
+        self.increase_validator_stake(operator_address, stake)
+        self.increase_validator_power(validator_address, stake/power_to_tokens)
 
         return self

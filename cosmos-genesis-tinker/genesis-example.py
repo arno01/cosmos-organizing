@@ -12,9 +12,9 @@ exported_genesis_filename = False
 new_genesis_filename = False
 
 if len(sys.argv) > 1:
-    exported_genesis_filename = sys.argv[1]
+    new_genesis_filename = sys.argv[1]
 if len(sys.argv) > 2:
-    new_genesis_filename = sys.argv[2]
+    exported_genesis_filename = sys.argv[2]
 
 # static values (for now, should be in .json config file)
 NODE1_OLD_PUBKEY = "cOQZvh/h9ZioSeUMZB/1Vy1Xo5x2sjrVjlE/qHnYifM="
@@ -82,7 +82,7 @@ genesis.increase_balance(NEW_DELEGATOR_ADDRESS, 300000000)
 
 STAKE_INCREASE = 6000000000000000
 genesis.increase_delegator_stake_to_validator(
-    NEW_DELEGATOR_ADDRESS, NODE2_NEW_ADDRESS, STAKE_INCREASE)
+    NEW_DELEGATOR_ADDRESS, BINANCE_VALIDATOR_ADDRESS, NODE2_NEW_ADDRESS, STAKE_INCREASE)
 
 print("SHA256SUM:")
 print(genesis.generate_shasum())
