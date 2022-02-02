@@ -260,7 +260,7 @@ class GenesisTinker:
         Creates a new coin based on a given name if it doesn't exist
         """
 
-        self.log_step("Creating new coin " + denom + " valued at " + amount)
+        self.log_step("Creating new coin " + denom + " valued at " + str(amount))
 
         supplies = self.genesis["app_state"]["bank"]["supply"]
 
